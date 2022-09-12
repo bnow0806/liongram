@@ -1,8 +1,11 @@
+from email.mime import image
 from multiprocessing import context
 from django.shortcuts import redirect, render, get_object_or_404
 from django.http import HttpResponse, JsonResponse, Http404
 from django.views.generic.list import ListView
 
+from posts.forms import PostBaseForm, PostCreateForm, PostDetailForm
+from django.views.decorators.csrf import csrf_exempt
 from .models import Post  
 # Create your views here.
 
@@ -26,7 +29,7 @@ def post_create_view(request):
     if request.method =='GET': #페이지 불러올때
         return render(request, 'posts/post_form.html')
     else:
-        image = request.FILES.get('image')
+        image = request.FILES.get('image')  #새로 생성, 포스트에 추가
         content = request.POST.get('content')
         print(image)
         print(content)
@@ -37,6 +40,28 @@ def post_create_view(request):
         )
         return redirect('index')
 
+#@csrf_exempt
+def post_create_form_view(request):
+    if request.method =='GET':
+        form=PostCreateForm()
+        context={'form':form}
+        return render(request, 'posts/post_form2.html',context)
+    else:
+
+        form = PostCreateForm(request.POST, request.FILES)
+
+        if form.is_valid():     #유효성 검사
+            Post.objects.create(
+                image = form.cleaned_data['image'],
+                content = form.cleaned_data['content'],
+                writer = request.user
+            )
+        else:
+            pass
+
+        return redirect('index')
+
+
 def post_detail_view(request, id):
     try:
         post=Post.objects.get(id =id)
@@ -44,6 +69,7 @@ def post_detail_view(request, id):
         return redirect('index')
     context={
         'post':post,
+        'form': PostDetailForm(),
     }
     return render(request, 'posts/post_detail.html', context) 
 
