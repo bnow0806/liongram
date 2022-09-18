@@ -30,8 +30,9 @@ urlpatterns = [
 
     #base_dir/templates/posts 프로젝트 관점에서 html 관리
     path('', index, name='index'),
+    path('accounts/', include('accounts.urls', namespace='accounts')),
     path('posts/', include('posts.urls', namespace='posts')),  #posts app 가져오기 
     path('__debug__/', include('debug_toolbar.urls')),
-]
+] 
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
